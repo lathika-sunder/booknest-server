@@ -8,6 +8,7 @@ const {
     getUser,
     getUsers
 } = require('../controllers/usersController');
+
 //for users
 router.post('/loginUser',loginUser)
 router.post('/logoutUser',logoutUser)

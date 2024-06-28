@@ -14,9 +14,10 @@ app.use(cors());
 app.use(express.json());
 
 
-app.get('/api/v1/booknest', (req, res) => {
-    res.send("Welcome to Booknest's Server");
+app.get('/api/v1/booknest', (request, response) => {
+    response.status(200).json({message:"Welcome to Booknest's Server"});
 });
+
 
 
 app.use('/api/v1/booknest/user', usersRouter);
