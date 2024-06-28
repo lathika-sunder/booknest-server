@@ -3,6 +3,7 @@
 const User = require('../models/userModel')
 const validatePassword = require('../utils/validatePassword')
 const generateToken=require('../utils/generateToken')
+const BlackList = require('../models/blackListModel')
 
 const loginUser = async (request, response) => {
     const { email, password } = request.body
@@ -37,10 +38,36 @@ const loginUser = async (request, response) => {
 
 }
 
-const logoutUser = (req, res) => {
-    // Logic to logout a user
-    res.send('User logged out');
-};
+const logoutUser = async (request, response) => {
+    try {
+        const authHeader = request.headers['cookie']
+        if (!authHeader) {
+            //No cookie provided
+            return response.status(204).json({ message: "No Cookie Provided" })
+
+        }
+
+        const cookie = authHeader.split('=')[1]//extract cookie value
+        const token = cookie.split(';')[0]//token is the first value in a cookie
+
+        const isBlackListed = await BlackList.findOne({ token: token })
+
+        if (isBlackListed) {
+            //No acton required already blacklisted
+            return response.status(204).json({ message: "No Content" })
+        }
+        const newBlackList = new BlackList({ token: token })
+        await newBlackList.save()
+
+        //browser should clear the cookie header
+        response.setHeader('Clear-Site-Data', '"cookies"')
+
+        response.status(200).json({ message: "Log Out Successful" })
+
+    } catch (error) {
+        response.status(500).json({ message: "Internal Server Error", error: error.message })
+    }
+}
 
 
 

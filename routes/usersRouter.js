@@ -12,7 +12,7 @@ const {
 
 //for users
 router.post('/loginUser',loginUser)
-router.post('/logoutUser',logoutUser)
+router.get('/logoutUser',logoutUser)
 
 
 //for admins
