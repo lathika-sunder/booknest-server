@@ -6,7 +6,8 @@ const {
     addUser,
     removeUser,
     getUser,
-    getUsers
+    getUsers,
+    addAdmin
 } = require('../controllers/usersController');
 
 //for users
@@ -20,6 +21,9 @@ router.delete('/removeUser',removeUser)
 router.get('/getUser/:userId',getUser)
 router.post('/getUsers',getUsers)
 
+
+//for superadmin
+router.post('/addAdmin',addAdmin)
 
 
 module.exports=router
