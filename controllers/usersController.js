@@ -2,6 +2,7 @@
 
 const User = require('../models/userModel')
 const validatePassword = require('../utils/validatePassword')
+const generateToken=require('../utils/generateToken')
 
 const loginUser = async (request, response) => {
     const { email, password } = request.body
@@ -12,15 +13,14 @@ const loginUser = async (request, response) => {
         if (!userToBeLogged) {
             return response.status(401).json({ message: "User not found" })
         }
-        const isValidPassword = validatePassword(password, userToBeLogged.password)
+        
 
-        if (!isValidPassword) {
+        if (userToBeLogged.password!=password) {
             return response.status(404).json({ message: "Login Failed, Invalid Password" })
         }
 
 
         //cookie generation
-
         const token = generateToken(userToBeLogged._id, userToBeLogged.email, userToBeLogged.role)
 
         const options = {
@@ -32,7 +32,7 @@ const loginUser = async (request, response) => {
         response.status(201).json({ message: "Login Successful", token: token })
 
     } catch (error) {
-        response.status(500).json({ message: "Internal Server Error", error: error })
+        response.status(500).json({ message: "Internal Server Error", error: error.message })
     }
 
 }
@@ -50,7 +50,7 @@ const addAdmin = async (request, response) => {
 
   try {
     const newUser = await user.save();
-    response.status(201).json(newUser);
+    response.status(201).json({message:"Admin added successfuly",newUser});
   } catch (error) {
     response.status(400).json({ message: error.message });
   }
@@ -58,22 +58,15 @@ const addAdmin = async (request, response) => {
 
 
 const addUser = async (request, response) => {
-  const { name, email, phone, password, role } = request.body;
-
-  // Validate role
-  if (role !== 'user' && role !== 'admin') {
-    return response.status(400).json({ message: 'Invalid role. Allowed roles are "user" and "admin".' });
-  }
-
- 
-  const user = new User({ name, email, phone, password, role });
-
-  try {
-    const newUser = await user.save();
-    response.status(201).json(newUser);
-  } catch (error) {
-    response.status(400).json({ message: error.message });
-  }
+    const { name, email, phone, password } = request.body;
+    const user = new User({ name, email, phone, password, role:'user' });
+  
+    try {
+      const newUser = await user.save();
+      response.status(201).json({message:"Admin added successfuly",newUser});
+    } catch (error) {
+      response.status(400).json({ message: error.message });
+    }
 };
 
 module.exports = { addAdmin, addUser };
