@@ -32,9 +32,9 @@ const bookSchema = new mongoose.Schema({
         required: true,
 
     },
-    publishedDate: {
-        type: Date,
-        default: Date.now
+    isAvailable:{
+        type:Boolean,
+        default:true
     }
 });
 

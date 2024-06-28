@@ -1,15 +1,21 @@
-const Book =require('../models/bookModel')
+const { response } = require('express');
+const LendedBook = require('../models/lendedBookModel');
+const User = require('../models/userModel');
+const Book = require('../models/bookModel');
 
 const searchBooks = async (request, response) => {
-    const { genre,author } = request.body
-    
+    const { genre, author } = request.body
+
     try {
-        const result = await Bus.find({
+        const result = await Book.find({
             $or: [
                 { genre: genre }
             ],
             $or: [
-                { author:author }
+                { author: author }
+            ],
+            $and: [
+                { isAvailable: true }
             ]
         });
         response.status(200).json(result)
@@ -29,15 +35,56 @@ const getBooks = async (request, response) => {
 };
 
 
-const getLendedBooks = (req, res) => {
-    // Logic to get lended books
-    res.send('Lended books retrieved');
+
+const lendBook = async (request, response) => {
+    const { userId, bookId } = request.body;
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return response.status(404).json({ message: "User not found" });
+        }
+
+        const book = await Book.findById(bookId);
+        if (!book) {
+            return response.status(404).json({ message: "Book not found" });
+        }
+
+        // Check if the book is already lended
+        const isBookLended = await LendedBook.findOne({ bookId });
+        if (isBookLended) {
+            return response.status(400).json({ message: "Book is already lended" });
+        }
+
+        // Create a new lended book record
+        const newLendedBook = new LendedBook({
+            userId,
+            bookId,
+            lendedDate: new Date()
+        });
+
+        // Save the lended book record
+        await newLendedBook.save();
+
+        response.status(201).json({ message: "Book successfully lended", lendedBook: newLendedBook });
+    } catch (error) {
+        response.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
 };
 
-const viewDues = (req, res) => {
-    // Logic to view dues
-    res.send('Dues viewed');
+
+
+
+const getLendedBooks = async (request, response) => {
+    const lendedBooks = await LendedBook.find()
+    try {
+        response.status(201).json({ message: "Lended Books Retreived", lendedBooks: lendedBooks })
+    } catch (error) {
+
+    }
 };
+
+
 
 // Add Book
 const addBook = async (request, response) => {
@@ -62,28 +109,78 @@ const addBook = async (request, response) => {
 };
 
 
-const removeBook = (req, res) => {
+const removeBook = async (request, response) => {
     // Logic to remove a book
-    res.send('Book removed');
+    const bookId = request.params.bookId;
+
+    try {
+        const book = await Book.findByIdAndDelete(bookId)
+        response.status(201).json({ message: "User Deleted Successfully" })
+    } catch (error) {
+        response.status(500).json({ message: error.message })
+    }
 };
 
-const updateBook = (req, res) => {
-    // Logic to update a book
-    res.send('Book updated');
+
+const updateBook = async (request, response) => {
+    const { bookId } = request.params;
+    const updatedFields = request.body;
+
+    try {
+        const updatedBook = await Book.findByIdAndUpdate(bookId, updatedFields, { new: true });
+
+        if (!updatedBook) {
+            return response.status(404).json({ message: "Book not found" });
+        }
+
+        response.status(200).json({ message: "Book updated successfully", updatedBook });
+    } catch (error) {
+        response.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
 };
 
-const getDueBooks = (req, res) => {
-    // Logic to get books with dues
-    res.send('Books with dues retrieved');
+
+const getDueBooks = async (request, response) => {
+    try {
+        const lendedBooks = await LendedBook.find();
+
+        let dueBooks = [];
+        let totalDueAmount = 0;
+
+        lendedBooks.forEach((lendedBook) => {
+            const lendedDate = new Date(lendedBook.lendedDate);
+            const currentDate = new Date();
+            const dueDays = Math.ceil((currentDate - lendedDate) / (1000 * 60 * 60 * 24)); // Calculate days difference
+
+            if (dueDays > 7) {
+                const dueAmount = (dueDays - 7) * 5;
+               
+                const dueBook = {
+                    _id: lendedBook._id,
+                    userId: lendedBook.userId,
+                    bookId: lendedBook.bookId,
+                    lendedDate: lendedBook.lendedDate,
+                    dueDays,
+                    dueAmount
+                };
+
+                dueBooks.push(dueBook);
+            }
+        });
+
+        response.status(200).json({ message: "Due books retrieved", dueBooks });
+    } catch (error) {
+        response.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
 };
 
 module.exports = {
     searchBooks,
     getBooks,
     getLendedBooks,
-    viewDues,
+    lendBook,
     addBook,
     removeBook,
     updateBook,
-    getDueBooks
+    getDueBooks,
 };

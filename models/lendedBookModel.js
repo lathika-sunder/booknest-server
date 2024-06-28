@@ -16,10 +16,6 @@ const lendedBookSchema = new Schema({
     type: Date,
     default: Date.now,
     required: true
-  },
-  dueDate: {
-    type: Date,
-    required: true
   }
 });
 

@@ -1,28 +1,27 @@
-const express=require('express')
-const router=express.Router()
-const{
+const express = require('express')
+const router = express.Router()
+const {
     searchBooks,
     getBooks,
     getLendedBooks,
-    viewDues,
     addBook,
     removeBook,
     updateBook,
-    getDueBooks
-}=require('../controllers/booksController')
+    getDueBooks, lendBook
+} = require('../controllers/booksController')
 
 
 //user
-router.get('/searchBooks',searchBooks)
-router.get('/viewLendedBooks',getLendedBooks)
-router.get('/viewDues',viewDues)
+router.get('/searchBooks', searchBooks)
+router.get('/viewLendedBooks', getLendedBooks)
 
 
 //admin
-router.get('/getBooks',getBooks)
-router.post('/addBook',addBook)
-router.delete('/removeBook',removeBook)
-router.put('/updateBook',updateBook)
-router.get('/getDueBooks',getDueBooks)
+router.get('/getBooks', getBooks)
+router.post('/addBook', addBook)
+router.delete('/removeBook/:bookId', removeBook)
+router.put('/updateBook/:bookId', updateBook)
+router.post('/lendBook', lendBook)
+router.get('/getDueBooks', getDueBooks)
 
-module.exports=router
+module.exports = router
