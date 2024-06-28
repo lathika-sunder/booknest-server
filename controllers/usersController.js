@@ -96,24 +96,51 @@ const addUser = async (request, response) => {
     }
 };
 
-module.exports = { addAdmin, addUser };
 
+// Remove User
+const removeUser = async (request, response) => {
+    const userId = request.params.userId;
 
-const removeUser = (req, res) => {
-    // Logic to remove a user
-    res.send('User removed');
+    try {
+        const deletedUser = await User.findByIdAndDelete(userId);
+
+        if (!deletedUser) {
+            return response.status(404).json({ message: "User not found" });
+        }
+
+        response.status(200).json({ message: "User removed successfully", deletedUser });
+    } catch (error) {
+        response.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
 };
 
-const getUser = (req, res) => {
-    const userId = req.params.userId;
-    // Logic to get a user by ID
-    res.send(`User details for userId ${userId}`);
+// Get User by ID
+const getUser = async (request, response) => {
+    const userId = request.params.userId;
+
+    try {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return response.status(404).json({ message: "User not found" });
+        }
+
+        response.status(200).json({ message: "User details retrieved", user });
+    } catch (error) {
+        response.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
 };
 
-const getUsers = (req, res) => {
-    // Logic to get all users
-    res.send('All users retrieved');
+// Get All Users
+const getUsers = async (request, response) => {
+    try {
+        const users = await User.find();
+        response.status(200).json({ message: "All users retrieved", users });
+    } catch (error) {
+        response.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
 };
+
 
 module.exports = {
     loginUser,

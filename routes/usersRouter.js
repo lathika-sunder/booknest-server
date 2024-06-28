@@ -17,9 +17,9 @@ router.get('/logoutUser',logoutUser)
 
 //for admins
 router.post('/addUser',addUser)
-router.delete('/removeUser',removeUser)
+router.delete('/removeUser/:userId',removeUser)
 router.get('/getUser/:userId',getUser)
-router.post('/getUsers',getUsers)
+router.get('/getUsers',getUsers)
 
 
 //for superadmin
