@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -12,6 +13,8 @@ const userSchema = new Schema({
     password: { type: String, require: true },
     role: { type: String, enum: ['admin', 'user'] }
 });
+
+userSchema.index({user:'text',content:'text'})
 
 const User = mongoose.model('User', userSchema);
 

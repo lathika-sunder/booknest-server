@@ -4,25 +4,19 @@ const User = require('../models/userModel');
 const Book = require('../models/bookModel');
 
 const searchBooks = async (request, response) => {
-    const { genre, author } = request.body
+    const query = request.query.query
 
     try {
-        const result = await Book.find({
-            $or: [
-                { genre: genre }
-            ],
-            $or: [
-                { author: author }
-            ],
-            $and: [
-                { isAvailable: true }
-            ]
-        });
+        const result = await Book.find(
+            { $text: { $search: query } },
+            { score: { $meta: "textScore" } } // Project the text score
+        ).sort({ score: { $meta: "textScore" } }).exec(); // Sort by text score
         response.status(200).json(result)
     } catch (error) {
         response.status(500).json({ message: "Error getting Books", error: error.message })
     }
 }
+
 
 // Get All Books
 const getBooks = async (request, response) => {
@@ -147,16 +141,16 @@ const getDueBooks = async (request, response) => {
         let dueBooks = [];
         let totalDueAmount = 0;
 
-        lendedBooks.forEach(async(lendedBook) => {
+        lendedBooks.forEach(async (lendedBook) => {
             const lendedDate = new Date(lendedBook.lendedDate);
             const currentDate = new Date();
             const dueDays = Math.ceil((currentDate - lendedDate) / (1000 * 60 * 60 * 24)); // Calculate days difference
-           
+
             if (dueDays > 7) {
                 const dueAmount = (dueDays - 7) * 5;
-                const user=await User.findById(lendedBook.userId)
-                const book=await Book.findById(lendedBook.bookId)
-          
+                const user = await User.findById(lendedBook.userId)
+                const book = await Book.findById(lendedBook.bookId)
+
                 const dueBook = {
                     _id: lendedBook._id,
                     user: user.name,
@@ -165,14 +159,14 @@ const getDueBooks = async (request, response) => {
                     dueDays,
                     dueAmount
                 };
-               
+
                 dueBooks.push(dueBook);
             }
             console.log(dueBooks)
             response.status(200).json({ message: "Due books retrieved", dueBooks });
         });
-        
-        
+
+
     } catch (error) {
         response.status(500).json({ message: "Internal Server Error", error: error.message });
     }
