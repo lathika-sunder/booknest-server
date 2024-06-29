@@ -147,28 +147,32 @@ const getDueBooks = async (request, response) => {
         let dueBooks = [];
         let totalDueAmount = 0;
 
-        lendedBooks.forEach((lendedBook) => {
+        lendedBooks.forEach(async(lendedBook) => {
             const lendedDate = new Date(lendedBook.lendedDate);
             const currentDate = new Date();
             const dueDays = Math.ceil((currentDate - lendedDate) / (1000 * 60 * 60 * 24)); // Calculate days difference
-
+           
             if (dueDays > 7) {
                 const dueAmount = (dueDays - 7) * 5;
-               
+                const user=await User.findById(lendedBook.userId)
+                const book=await Book.findById(lendedBook.bookId)
+          
                 const dueBook = {
                     _id: lendedBook._id,
-                    userId: lendedBook.userId,
-                    bookId: lendedBook.bookId,
+                    user: user.name,
+                    book: book.bookName,
                     lendedDate: lendedBook.lendedDate,
                     dueDays,
                     dueAmount
                 };
-
+               
                 dueBooks.push(dueBook);
             }
+            console.log(dueBooks)
+            response.status(200).json({ message: "Due books retrieved", dueBooks });
         });
-
-        response.status(200).json({ message: "Due books retrieved", dueBooks });
+        
+        
     } catch (error) {
         response.status(500).json({ message: "Internal Server Error", error: error.message });
     }

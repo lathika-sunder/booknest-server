@@ -30,7 +30,7 @@ const loginUser = async (request, response) => {
             sameSite: 'None'
         }
         response.cookie('SessionID', token, options)
-        response.status(201).json({ message: "Login Successful", token: token })
+        response.status(201).json({ message: "Login Successful", token: token,role:userToBeLogged.role })
 
     } catch (error) {
         response.status(500).json({ message: "Internal Server Error", error: error.message })
