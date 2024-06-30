@@ -5,12 +5,14 @@ const Book = require('../models/bookModel');
 
 const searchBooks = async (request, response) => {
     const query = request.query.query
+    console.log(query)
 
     try {
         const result = await Book.find(
             { $text: { $search: query } },
             { score: { $meta: "textScore" } } // Project the text score
         ).sort({ score: { $meta: "textScore" } }).exec(); // Sort by text score
+      console.log(result)
         response.status(200).json(result)
     } catch (error) {
         response.status(500).json({ message: "Error getting Books", error: error.message })
