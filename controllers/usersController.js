@@ -26,10 +26,10 @@ const loginUser = async (request, response) => {
 
         const options = {
             maxAge: 20 * 60 * 1000,
-            httpOnly: true,
-            sameSite: 'None'
+            // httpOnly: true,
+            // sameSite: 'None'
         }
-        response.cookie('SessionID', token, options)
+       response.cookie('SessionID', token, options)
         console.log(userToBeLogged.role)
         response.status(201).json({ message: "Login Successful", token: token,role:userToBeLogged.role })
 
